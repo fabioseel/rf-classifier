@@ -33,7 +33,7 @@ def gabor_kernel(shape=(16, 16), frequency=1/8, theta=np.pi/4, sigma_x=3, sigma_
     gabor_kernel = envelope * sinusoid
     return gabor_kernel * factor + offset
 
-def center_surround(shape=(16,16), theta =np.pi/4, sigma_x1=2, sigma_y1=2, sigma_x2=4, sigma_y2=4, center_offset=(0, 0), factor=1, offset=0):
+def center_surround(shape=(16,16), theta =np.pi/4, sigma_x1=1, sigma_y1=1, sigma_x2=2, sigma_y2=2, center_offset=(0, 0), factor=1, offset=0):
     """
     Generate a Gabor kernel with the specified shape, center offset, and phase offset.
 
@@ -63,7 +63,7 @@ def center_surround(shape=(16,16), theta =np.pi/4, sigma_x1=2, sigma_y1=2, sigma
 
     gaussian1 = np.exp(-0.5 * (x_theta**2 / sigma_x1**2 + y_theta**2 / sigma_y1**2))
     gaussian2 = np.exp(-0.5 * (x_theta**2 / sigma_x2**2 + y_theta**2 / sigma_y2**2))
-    return (2*gaussian1-gaussian2)*factor + offset
+    return (sigma_x2/sigma_x1*gaussian1-gaussian2)*factor + offset
 
 def noise(shape=(16,16), low=0, high=1):
     """
@@ -117,6 +117,21 @@ def color(shape=(16,16), color=(1,0,0)):
         color (tuple, optional): Desired color (r,g,b)
 
     Returns:
-        numpy.ndarray: Image with shape (w,h,3).
+        numpy.ndarray: Image with shape (h, w,3).
     """
     return np.stack([np.full(shape, fill_value=color[0]),np.full(shape, fill_value=color[1]),np.full(shape, fill_value=color[2])], axis=2)
+
+def mult_freq(shape=(16,16), freq1=1/4, freq2=1/2, theta1=0, theta2=np.pi/2):
+    x, y = np.meshgrid(np.linspace(-shape[1]/2, shape[1]/2, shape[1]), np.linspace(-shape[0]/2, shape[0]/2, shape[0]))
+    
+    # Apply center offset to the coordinates
+    x_theta1 = x * np.cos(theta1) + y * np.sin(theta1)
+    sinusoid1 = np.cos(2 * np.pi * freq1 * x_theta1)
+
+    x_theta2 = x * np.cos(theta2) + y * np.sin(theta2)
+    sinusoid2 = np.cos(2 * np.pi * freq2 * x_theta2)
+
+    return sinusoid1*sinusoid2
+
+def simple_edge(shape=(16,16), theta=0):
+    return gabor_kernel(shape, frequency=1/np.max(shape), theta=theta, phase_offset=np.pi/2)
