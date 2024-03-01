@@ -32,9 +32,9 @@ class RandomAffine(torch.nn.Module):
         max (float):
     """
 
-    def __init__(self, degrees):
+    def __init__(self, **affine_args):
         super().__init__()
-        self.degrees = degrees
+        self.affine_args = affine_args
 
     def forward(self, img):
         """
@@ -45,5 +45,5 @@ class RandomAffine(torch.nn.Module):
             Image with rescaled color channels.
         """
         inp_avg = img.mean(axis=(1,2))
-        transf = transforms.RandomAffine(self.degrees, fill=[*inp_avg])
+        transf = transforms.RandomAffine(**self.affine_args, fill=[*inp_avg])
         return transf(img)
