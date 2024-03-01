@@ -5,7 +5,7 @@ import torch
 from torchvision.transforms import Resize, InterpolationMode
 
 class CNNClassifier(nn.Module):
-    def __init__(self, size=(32,32), conv_layers = 5, conv_channels=8, kernel_size = 5, fc_layers=3, fc_nodes = 256, n_classes=10):
+    def __init__(self, size=(32,32), conv_layers = 5, conv_channels=32, kernel_size = 7, fc_layers=4, fc_nodes = 1024, n_classes=10):
         super().__init__()
         self.resize = Resize(size, antialias=True)
         self.convs = nn.Sequential(nn.Conv2d(3,conv_channels, kernel_size=kernel_size), nn.GELU())
