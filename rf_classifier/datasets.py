@@ -31,9 +31,7 @@ class SyntheticRFsDataset(Dataset):
                 # Generate image for each class
                 image = self.generate_image(class_idx)
                 # Convert image to tensor
-                image_tensor = Resize(
-                    (32, 32), antialias=True, interpolation=InterpolationMode.NEAREST
-                )(torch.from_numpy(image).to(dtype=torch.float32).movedim(2, 0))
+                image_tensor = torch.from_numpy(image).to(dtype=torch.float32).movedim(2, 0)
                 # Append image and label to data list
                 data.append((image_tensor, class_idx))
         return data
