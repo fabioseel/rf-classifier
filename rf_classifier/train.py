@@ -42,7 +42,6 @@ def train(model: nn.Module, optimizer: optim.Optimizer, train_loader: DataLoader
 
     return avg_loss, avg_acc
 
-
 def validate(model: nn.Module, dataloader: DataLoader, device: torch.device, abort_batch = None, verbose = True):
     # Evaluate the model on the test data
     model.eval()  # Set the model to evaluation mode
@@ -52,11 +51,16 @@ def validate(model: nn.Module, dataloader: DataLoader, device: torch.device, abo
     with torch.no_grad():
         num_iter = abort_batch if abort_batch is not None else len(dataloader)
 
+        all_outputs =[]
+        all_labels = []
         pbar = tqdm(enumerate(dataloader), total=num_iter, disable=not verbose)
         for i, (inputs, labels) in pbar:
+            all_labels.extend(labels)
+            
             inputs = inputs.to(device)
             labels = labels.to(device)
             outputs = model(inputs)
+            all_outputs.extend(outputs.detach().cpu())
             total += labels.size(0)
             epoch_correct = num_correct(outputs, labels)
             correct += epoch_correct
@@ -67,7 +71,7 @@ def validate(model: nn.Module, dataloader: DataLoader, device: torch.device, abo
             if i == num_iter-1:
                 accuracy = correct / total
                 pbar.set_postfix({'Acc.:': accuracy})
-    return accuracy
+    return accuracy, all_outputs, all_labels
 
 
 def num_correct(outputs, labels):
