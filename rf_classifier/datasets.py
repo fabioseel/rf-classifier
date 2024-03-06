@@ -1,9 +1,10 @@
-from torch.utils.data import Dataset
-from rf_classifier import rf_generator
-from random import uniform as urand, randint
+from random import randint
+from random import uniform as urand
+
 import torch
-from torchvision.transforms import Resize, InterpolationMode
-import numpy as np
+from torch.utils.data import Dataset
+
+from rf_classifier import rf_generator
 
 
 class SyntheticRFsDataset(Dataset):

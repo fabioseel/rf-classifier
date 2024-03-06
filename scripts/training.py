@@ -1,12 +1,14 @@
-from rf_classifier.train import train, validate
-from rf_classifier.models import CNNClassifier
-from torchvision.datasets import ImageFolder
-from torchvision import transforms
-from torch.utils.data.dataloader import DataLoader
-from rf_classifier.transforms import RandomAffine, ColorRescale, RandomColorRescale
-from rf_classifier.datasets import SyntheticRFsDataset
-from torch.optim import AdamW, SGD
 import torch
+from torch.optim import SGD, AdamW
+from torch.utils.data.dataloader import DataLoader
+from torchvision import transforms
+from torchvision.datasets import ImageFolder
+
+from rf_classifier.datasets import SyntheticRFsDataset
+from rf_classifier.models import CNNClassifier
+from rf_classifier.train import train, validate
+from rf_classifier.transforms import (ColorRescale, RandomAffine,
+                                      RandomColorRescale)
 
 if torch.cuda.is_available():
     dev = "cuda"

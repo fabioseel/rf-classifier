@@ -1,6 +1,7 @@
 import torch
 from torchvision import transforms
 
+
 class ColorRescale(torch.nn.Module):
     """
 

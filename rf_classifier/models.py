@@ -1,8 +1,8 @@
 import math
 
-import torch.nn as nn
 import torch
-from torchvision.transforms import Resize, InterpolationMode, Compose
+import torch.nn as nn
+from torchvision.transforms import Compose, InterpolationMode, Resize
 
 from rf_classifier.transforms import ColorRescale
 

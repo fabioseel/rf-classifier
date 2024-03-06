@@ -4,6 +4,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
+
 def train(model: nn.Module, optimizer: optim.Optimizer, train_loader: DataLoader, device: torch.device, max_num_batches: int = None):
     # Define the loss function and optimizer
     criterion = nn.CrossEntropyLoss()
