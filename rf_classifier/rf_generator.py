@@ -1,11 +1,17 @@
 import numpy as np
 
 
-def gaussian_kernel(shape=(16, 16), theta=0, sigma_x=3, sigma_y=3):
+def gaussian_kernel(
+    shape=(16, 16), theta=0, sigma_x=3, sigma_y=3, center_offset=(0, 0)
+):
     x, y = np.meshgrid(
         np.linspace(-shape[1] / 2, shape[1] / 2, shape[1]),
         np.linspace(-shape[0] / 2, shape[0] / 2, shape[0]),
     )
+    # Apply center offset to the coordinates
+    x -= center_offset[0]
+    y -= center_offset[1]
+
     x_theta = x * np.cos(theta) + y * np.sin(theta)
     y_theta = -x * np.sin(theta) + y * np.cos(theta)
     return np.exp(-0.5 * (x_theta**2 / sigma_x**2 + y_theta**2 / sigma_y**2))
@@ -213,7 +219,36 @@ def mult_freq(shape=(16, 16), freq1=1 / 4, freq2=1 / 2, theta1=0, theta2=np.pi /
     return sinusoid1 * sinusoid2
 
 
-def simple_edge(shape=(16, 16), theta=0):
+def simple_edge(
+    shape=(16, 16),
+    theta=0,
+    sigma_x=3,
+    sigma_y=3,
+    center_offset=(0,0)
+):
     return gabor_kernel(
-        shape, frequency=1 / np.max(shape), theta=theta, phase_offset=np.pi / 2
+        shape,
+        frequency=1 / np.max(shape),
+        theta=theta,
+        sigma_x=sigma_x,
+        sigma_y=sigma_y,
+        phase_offset=np.pi / 2,
+        center_offset=center_offset
     )
+
+
+def gaussian_mixture(shape=(16, 16), num_gaussians=8):
+    rf = []
+    for i in range(num_gaussians):
+        partial_rf = []
+        for i in range(3):  # Color Channels
+            sigma_x = np.random.uniform(1, shape[0])
+            sigma_y = np.random.uniform(1, shape[1])
+            offset_x = np.random.uniform(0, shape[0] / 2)
+            offset_y = np.random.uniform(0, shape[1] / 2)
+            theta = np.random.uniform(0, np.pi / 2)
+            partial_rf.append(
+                gaussian_kernel(shape, theta, sigma_x, sigma_y, (offset_x, offset_y))
+            )
+        rf.append(np.stack(partial_rf, axis=2))
+    return np.mean(rf, axis=0)
