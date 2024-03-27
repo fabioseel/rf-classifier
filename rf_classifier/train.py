@@ -74,6 +74,22 @@ def validate(model: nn.Module, dataloader: DataLoader, device: torch.device, abo
                 pbar.set_postfix({'Acc.:': accuracy})
     return accuracy, all_outputs, all_labels
 
+def ensemble_validate(models: list, dataloader: DataLoader, device: torch.device, abort_batch = None, verbose = True, method = "voting"):
+    # Evaluate the model on the test data
+    all_outputs = []
+    for model in models:
+        _, outputs, labels = validate(model, dataloader, device, abort_batch, verbose)
+        all_outputs.append(torch.stack(outputs))
+    all_outputs = torch.stack(all_outputs)
+    if method == "voting":
+        votings = all_outputs.argmax(dim=-1).float()
+        joint_output = torch.stack([o.histogram(bins=torch.tensor([i-.5 for i in range(all_outputs.shape[-1]+1)]))[0] for o in votings.T])/votings.shape[0]
+    if method == "mean":
+        joint_output = all_outputs.mean(dim=0)
+
+    correct = num_correct(joint_output, torch.stack(labels))
+    accuracy = correct/len(joint_output)
+    return accuracy, joint_output, labels
 
 def num_correct(outputs, labels):
     _, predicted = torch.max(outputs.data, 1)
