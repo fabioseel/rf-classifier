@@ -23,7 +23,10 @@ class ColorRescale(torch.nn.Module):
         Returns:
             Image with rescaled color channels.
         """
-        return (img - img.min()) / (img.max() - img.min())*(self.max-self.min)-self.min
+        if (img.max() - img.min()) != 0:
+            return (img - img.min()) / (img.max() - img.min())*(self.max-self.min)+self.min
+        else:
+            return img*0+(self.max-self.min)/2
     
 class RandomAffine(torch.nn.Module):
     """
