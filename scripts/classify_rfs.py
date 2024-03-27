@@ -34,7 +34,7 @@ model_name = os.path.split(model_path)[1]
 
 # Load weights and extract number of classes to build model
 weights = torch.load(model_path)
-n_classes = weights[next(reversed(weights))].shape
+n_classes = weights[next(reversed(weights))].shape[0]
 
 classifier = CNNClassifier(n_classes=n_classes) # TODO: store parametrization of classifier in more meaningful way
 classifier.load_state_dict(weights)
