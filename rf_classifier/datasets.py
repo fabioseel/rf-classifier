@@ -10,6 +10,41 @@ import os
 from PIL import Image
 from matplotlib.colors import hsv_to_rgb
 
+class ClassGroupDataset(Dataset):
+    def __init__(self, other_dataset: Dataset, group_classes: list = []):
+        self.dataset = other_dataset
+
+        n_new_classes = len(group_classes)
+        ungrouped = []
+        self.label_dict = {}
+        for old_label in range(len(self.dataset.classes)):
+            in_group = False
+            for new_label, group in enumerate(group_classes):
+                in_group = old_label in group
+                if in_group:
+                    self.label_dict[old_label] = new_label
+                    break
+            if not in_group:
+                self.label_dict[old_label] = n_new_classes
+                ungrouped.append(old_label)
+                n_new_classes +=1
+
+        self.classes = []
+        for group in group_classes:
+            self.classes.append("/".join([self.dataset.classes[i] for i in group]))
+        for i in ungrouped:
+            self.classes.append(self.dataset.classes[i])
+
+        self.num_classes = n_new_classes
+
+    def __len__(self):
+        return len(self.dataset)
+    
+    def __getitem__(self, idx):
+        image, label = self.dataset[idx]
+        if label in self.group_class_dict.keys():
+            label = self.label_dict[label]
+        return image, label
 
 class SyntheticRFsDataset(Dataset):
     def __init__(self, num_samples_per_class, transform=None):
