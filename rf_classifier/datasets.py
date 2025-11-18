@@ -37,12 +37,14 @@ class ClassGroupDataset(Dataset):
 
         self.num_classes = n_new_classes
 
+        self.class_to_idx={class_name: idx for idx, class_name in enumerate(self.classes)}
+
     def __len__(self):
         return len(self.dataset)
     
     def __getitem__(self, idx):
         image, label = self.dataset[idx]
-        if label in self.group_class_dict.keys():
+        if label in self.label_dict.keys():
             label = self.label_dict[label]
         return image, label
 

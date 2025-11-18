@@ -4,11 +4,10 @@ from torch.utils.data.dataloader import DataLoader
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 
-from rf_classifier.datasets import SyntheticRFsDataset
+from rf_classifier.datasets import SyntheticRFsDataset, ClassGroupDataset
 from rf_classifier.models import CNNClassifier
 from rf_classifier.train import train, validate
-from rf_classifier.transforms import (ColorRescale, RandomAffine,
-                                      RandomColorRescale)
+from rf_classifier.transforms import ColorRescale, RandomAffine, RandomColorRescale
 
 if torch.cuda.is_available():
     dev = "cuda"
@@ -24,7 +23,7 @@ inp_transform = transforms.Compose(
             (32, 32), antialias=True, interpolation=transforms.InterpolationMode.NEAREST
         ),
         transforms.Grayscale(3),
-        ColorRescale(-1,1)
+        ColorRescale(-1, 1),
         # transforms.Normalize(mean=0.5, std=1),
     ]
 )
@@ -39,18 +38,32 @@ data_transforms = transforms.Compose(
         inp_transform,
     ]
 )
-data = SyntheticRFsDataset(30000, transform=inp_transform)
+data = SyntheticRFsDataset(10000, transform=inp_transform)
 big_train_data = ImageFolder(
-    "../data/example_rfs2",
+    "../data/cnn_rfs/dataset02_v0.1",
     transform=transforms.Compose([transforms.ToTensor(), data_transforms]),
 )
 test_data = ImageFolder(
-    "../data/example_rfs",
+    "../data/cnn_rfs/dataset01_v0.1",
     transform=transforms.Compose([transforms.ToTensor(), inp_transform]),
 )
 
-train_loader_synth = DataLoader(torch.utils.data.dataset.ConcatDataset([data, big_train_data]), batch_size=32, shuffle=True, prefetch_factor=3, pin_memory=True, num_workers=4)
-test_loader = DataLoader(torch.utils.data.dataset.ConcatDataset([test_data, big_train_data]), batch_size=256, shuffle=False)
+class_groups = [[0, 1], [2, 3, 5], [4, 6]]
+data = ClassGroupDataset(data, class_groups)
+big_train_data = ClassGroupDataset(big_train_data, class_groups)
+test_data = ClassGroupDataset(test_data, class_groups)
+
+train_loader_synth = DataLoader(
+    torch.utils.data.dataset.ConcatDataset([data, big_train_data]),
+    batch_size=32,
+    shuffle=True,
+    prefetch_factor=3,
+    pin_memory=True,
+    num_workers=4,
+)
+test_loader = DataLoader(
+    torch.utils.data.dataset.ConcatDataset([test_data]), batch_size=256, shuffle=False
+)
 
 classifier = CNNClassifier(n_classes=len(data.classes))
 classifier.to(device)
@@ -72,7 +85,7 @@ for i in range(num_epochs):
         early_stop_count = 0
         torch.save(
             classifier.state_dict(),
-            "../weights/cnn_classifier/greyscale_classifier.pth",
+            "../weights/cnn_classifier/3class_classifier.pth",
         )
     else:
         early_stop_count += 1
